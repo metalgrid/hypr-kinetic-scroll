@@ -71,6 +71,7 @@ plugin:kinetic-scroll:stop_on_target_change = 1
 plugin:kinetic-scroll:debug = 0
 plugin:kinetic-scroll:stop_on_click = 0
 plugin:kinetic-scroll:stop_on_focus = 0
+plugin:kinetic-scroll:stop_on_touchpad_gesture = 1
 ```
 
 Notes:
@@ -81,6 +82,7 @@ Notes:
 - `delta_multiplier` scales swipe impulse (higher = faster acceleration buildup).
 - `disable_in_browser` keeps native browser kinetic scrolling when set to `1`.
 - `stop_on_target_change` stops active inertia when scroll target window changes.
+- `stop_on_touchpad_gesture` stops inertia on two-finger touchpad hold/swipe/pinch begin events.
 
 The plugin also respects Hyprland's `input:touchpad:scroll_factor` for
 synthetic events.
