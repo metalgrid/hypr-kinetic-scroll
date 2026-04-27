@@ -1,6 +1,7 @@
 #pragma once
 #include <hyprland/src/devices/IPointer.hpp>
 #include <wayland-server-core.h>
+#include <hyprland/src/event/EventBus.hpp>
 #include <cstdint>
 
 class KineticState {
