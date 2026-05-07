@@ -54,6 +54,12 @@ KineticState::~KineticState() {
         wl_event_source_remove(m_decayTimer);
 }
 
+static void pushToWindow(std::deque<KineticState::DeltaSample>& window, double delta, uint32_t timeMs) {
+    window.push_back({delta, timeMs});
+    while (window.size() > KineticState::MAX_DELTA_WINDOW)
+        window.pop_front();
+}
+
 void KineticState::onAxis(IPointer::SAxisEvent& e) {
     static auto const* PENABLED =
         (Hyprlang::INT* const*)HyprlandAPI::getConfigValue(PHANDLE, "plugin:kinetic-scroll:enabled")->getDataStaticPtr();
@@ -115,15 +121,27 @@ void KineticState::onAxis(IPointer::SAxisEvent& e) {
     m_scrollTargetWindowKey = targetKeys.windowKey;
     m_scrollTargetSurfaceKey = targetKeys.surfaceKey;
 
-    constexpr double alpha = 0.3;
-    uint32_t         dt    = e.timeMs - m_lastEventMs;
+    uint32_t dt = e.timeMs - m_lastEventMs;
 
     if (m_lastEventMs > 0 && dt > 0 && dt < 200) {
-        // Exponential smoothing of deltas
-        if (e.axis == WL_POINTER_AXIS_VERTICAL_SCROLL)
-            m_velocityV = alpha * scaledDelta + (1.0 - alpha) * m_velocityV;
-        else
-            m_velocityH = alpha * scaledDelta + (1.0 - alpha) * m_velocityH;
+        // Accumulate into sliding window for peak-aware velocity estimation
+        double& vel      = (e.axis == WL_POINTER_AXIS_VERTICAL_SCROLL) ? m_velocityV : m_velocityH;
+        auto&   window   = (e.axis == WL_POINTER_AXIS_VERTICAL_SCROLL) ? m_recentDeltasV : m_recentDeltasH;
+
+        pushToWindow(window, scaledDelta, e.timeMs);
+
+        // Weighted average: more weight on recent samples, with a floor at
+        // the last raw delta so kinetic never undershoots perceived speed.
+        double weightedSum = 0.0;
+        double weightTotal = 0.0;
+        double lastRaw     = window.back().delta;
+        for (size_t i = 0; i < window.size(); i++) {
+            double w = static_cast<double>(i + 1); // linear ramp: newest = highest weight
+            weightedSum += window[i].delta * w;
+            weightTotal += w;
+        }
+        double avgVel = weightedSum / weightTotal;
+        vel = std::copysign(std::max(std::abs(avgVel), std::abs(lastRaw)), avgVel);
     } else if (resumedFromDecay) {
         // Continue inertia: add new gesture impulse on top of remaining momentum
         if (e.axis == WL_POINTER_AXIS_VERTICAL_SCROLL)
@@ -132,6 +150,8 @@ void KineticState::onAxis(IPointer::SAxisEvent& e) {
             m_velocityH += scaledDelta;
     } else {
         // First event or large gap - seed velocity directly
+        m_recentDeltasV.clear();
+        m_recentDeltasH.clear();
         if (e.axis == WL_POINTER_AXIS_VERTICAL_SCROLL)
             m_velocityV = scaledDelta;
         else
@@ -186,6 +206,8 @@ void KineticState::stopKinetic(const char* reason) {
     m_lastEventMs          = 0;
     m_scrollTargetWindowKey = 0;
     m_scrollTargetSurfaceKey = 0;
+    m_recentDeltasV.clear();
+    m_recentDeltasH.clear();
     wl_event_source_timer_update(m_stopTimer, 0);
     wl_event_source_timer_update(m_decayTimer, 0);
 }
