@@ -216,6 +216,18 @@ int KineticState::onStopTimer(void* data) {
     self->m_tracking = false;
     self->m_decaying = true;
 
+    // Emit the first synthetic scroll immediately to bridge the gap between
+    // the last real axis event and the first timer-driven decay tick.
+    // Without this, there's a perceptible ~66ms stutter (50ms stop timeout +
+    // 16ms interval) with zero scrolling.
+    self->emitSyntheticScroll();
+
+    // Now apply the first deceleration so the next timer tick starts decayed
+    static auto const* PDECEL =
+        (Hyprlang::FLOAT* const*)HyprlandAPI::getConfigValue(PHANDLE, "plugin:kinetic-scroll:decel")->getDataStaticPtr();
+    self->m_velocityV *= **PDECEL;
+    self->m_velocityH *= **PDECEL;
+
     static auto const* PINTERVAL =
         (Hyprlang::INT* const*)HyprlandAPI::getConfigValue(PHANDLE, "plugin:kinetic-scroll:interval_ms")->getDataStaticPtr();
 
