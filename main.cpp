@@ -125,6 +125,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
     HyprlandAPI::addConfigValue(PHANDLE, "plugin:kinetic-scroll:stop_on_click", Hyprlang::INT{0});
     HyprlandAPI::addConfigValue(PHANDLE, "plugin:kinetic-scroll:stop_on_focus", Hyprlang::INT{0});
     HyprlandAPI::addConfigValue(PHANDLE, "plugin:kinetic-scroll:stop_on_touchpad_gesture", Hyprlang::INT{1});
+    HyprlandAPI::addConfigValue(PHANDLE, "plugin:kinetic-scroll:stop_delay_ms", Hyprlang::INT{20});
 
     // Create kinetic state (must be after compositor is ready, which it is during PLUGIN_INIT)
     g_pKineticState = new KineticState();

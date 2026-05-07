@@ -162,8 +162,11 @@ void KineticState::onAxis(IPointer::SAxisEvent& e) {
         }
     }
 
-    // Reset stop detection: if no event arrives within 50ms, finger has lifted
-    wl_event_source_timer_update(m_stopTimer, 50);
+    // Reset stop detection: if no event arrives within the configured threshold,
+    // the finger has lifted. Touchpad events arrive at ~8-16ms intervals.
+    static auto const* PSTOPDELAY =
+        (Hyprlang::INT* const*)HyprlandAPI::getConfigValue(PHANDLE, "plugin:kinetic-scroll:stop_delay_ms")->getDataStaticPtr();
+    wl_event_source_timer_update(m_stopTimer, **PSTOPDELAY);
     // Ensure decay timer is off while actively tracking
     wl_event_source_timer_update(m_decayTimer, 0);
 }
