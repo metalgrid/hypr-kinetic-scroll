@@ -4,10 +4,17 @@ Hyprland compositor plugin that adds kinetic (inertial) scrolling for touchpads
 at the compositor level, so momentum scrolling works consistently across apps
 (not just in browsers).
 
-Prebuilt binaries are tied to a specific Hyprland version/ABI. If you’re not on
-the same version, install via hyprpm (build locally) instead.
+## Version compatibility
 
-Releases: https://github.com/savonovv/hypr-kinetic-scroll/releases
+Package versions and Git tags track the Hyprland version they support.
+For example, tag `0.56` targets Hyprland `0.56.x`, not Hyprland `0.57.x`.
+Use the matching plugin version for your Hyprland release.
+
+Prebuilt binaries also require a matching Hyprland ABI.
+Build locally with hyprpm against the headers for your running Hyprland version.
+A local build does not make an older plugin compatible with a newer Hyprland API.
+
+Releases: https://github.com/metalgrid/hypr-kinetic-scroll/releases
 
 ## Features
 
@@ -34,7 +41,7 @@ make
 This is the safest way to get a matching binary for your Hyprland version:
 
 ```bash
-hyprpm add https://github.com/savonovv/hypr-kinetic-scroll
+hyprpm add https://github.com/metalgrid/hypr-kinetic-scroll
 hyprpm update
 hyprpm enable hypr-kinetic-scroll
 ```
