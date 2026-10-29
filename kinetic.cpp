@@ -82,7 +82,7 @@ void KineticState::onAxis(IPointer::SAxisEvent& e) {
 
     if (*PDISABLE_BROWSER) {
         const auto PWIN = g_pInputManager ? g_pInputManager->m_lastMouseFocus.lock() : nullptr;
-        if (PWIN && classLooksLikeBrowser(PWIN->m_class)) {
+        if (PWIN && classLooksLikeBrowser(PWIN->metadata().appID())) {
             if (m_decaying)
                 stopKinetic("browserFocus");
             return;
@@ -278,7 +278,7 @@ int KineticState::onDecayTimer(void* data) {
 
     if (*PDISABLE_BROWSER) {
         const auto PWIN = g_pInputManager ? g_pInputManager->m_lastMouseFocus.lock() : nullptr;
-        if (PWIN && classLooksLikeBrowser(PWIN->m_class)) {
+        if (PWIN && classLooksLikeBrowser(PWIN->metadata().appID())) {
             self->stopKinetic("browserDecay");
             return 0;
         }
